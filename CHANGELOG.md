@@ -1,6 +1,40 @@
 # OpenCore Legacy Patcher changelog
 
 ## 2.1.0
+- Disable FeatureUnlock by default
+  - Intended to maintain long term stability
+  - If features unlocked by FeatureUnlock desired, can be enabled in settings
+- Disable mediaanalysisd on Metal 3802-based GPUs
+  - Intended to maintain long term stability
+  - If Live Text support desired, can be enabled in settings
+- Support for retaining GUI settings when building on-model
+  - When switching to a different model, model-specific GUI settings will be reset
+  - Note resetting saved settings not implemented yet
+    - Delete `/Users/Shared/.com.dortania.opencore-legacy-patcher.plist` and restart app to reset settings
+
+## 2.0.2
+- Fix Nvidia Kepler patches not installing on Monterey
+- Fix `iMac7,1` and `iMac8,1` failing to apply root patches on macOS Sequoia
+- Avoid downgrading AppleGVA stack on AMD GCN and newer GPUs
+  - Resolves VTDecoderXPC crashes
+  - Thanks @ausdauersportler for the catch!
+- Resolve glitched widgets on 3802-based GPUs running macOS Sequoia 15.1
+- Resolve CoreImage crashes on 3802-based GPUs running macOS Sequoia
+- Resolve missing screen capture crop borders on non-Metal GPUs running macOS Sequoia
+- Resolve TeraScale 2 HDCP kernel panic
+- Resolve specific Wallpaper locking up on non-Metal GPUs running macOS Sequoia
+  - Removes unsupported Metal-based wallpaper (Macintosh Wallpaper)
+- Resolve firmware upload incompatibilities on pre-2012 Macs with 2012+ Airport cards
+  - Thanks @ausdauersportler for the catch!
+- Resolve `diskutil` failing to be located in the installer creation process
+  - Thanks @niklasravnsborg for the report!
+- Increment binaries:
+  - PatcherSupportPkg 1.8.3 - release
+
+## 2.0.1
+- Fix MacBookPro13,3 listing 'Available patches' after having installed all applicable patches
+- Fix Nvidia Tesla and Kepler patches not installing on Monterey (and older if applicable)
+- Fix Nvidia Web Drivers incorrectly listing 'OpenGL', 'compat' and 'nvda_drv(_vrl)' missing
 
 ## 2.0.0
 - Set `AssociatedBundleIdentifiers` property in launch services as an array

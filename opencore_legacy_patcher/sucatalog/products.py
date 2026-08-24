@@ -55,7 +55,7 @@ class CatalogProducts:
         # Ensure Apple Silicon specific Installers are not listed
         if "VMM-x86_64" not in data["MobileAssetProperties"]["SupportedDeviceModels"]:
             if self.vmm_only:
-                return {}
+                return {"Missing VMM Support": True}
 
         version = data["MobileAssetProperties"]["OSVersion"]
         build   = data["MobileAssetProperties"]["Build"]
@@ -82,7 +82,7 @@ class CatalogProducts:
 
         With macOS Sequoia, the Info.plist is no longer present in the InstallAssistant's assets
         """
-
+        _does_support_vmm = False
         for entry in data["Assets"]:
             if "SupportedDeviceModels" not in entry:
                 continue
@@ -93,6 +93,8 @@ class CatalogProducts:
             if "VMM-x86_64" not in entry["SupportedDeviceModels"]:
                 if self.vmm_only:
                     continue
+
+            _does_support_vmm = True
 
             build   = entry["Build"]
             version = entry["OSVersion"]
@@ -108,6 +110,10 @@ class CatalogProducts:
                 "Build":   build,
                 "Catalog": CatalogURL().catalog_url_to_seed(catalog_url),
             }
+
+        if _does_support_vmm is False:
+            if self.vmm_only:
+                return {"Missing VMM Support": True}
 
         return {}
 
@@ -208,9 +214,9 @@ class CatalogProducts:
 
         # Remove all but the newest version
         for version in supported_versions:
-            _newest_version = packaging.version.parse("0.0.0")
+            _latest_stable_version = packaging.version.parse("0.0.0")
 
-            # First, determine largest version
+            # First, determine largest stable version
             for installer in products:
                 if installer["Version"] is None:
                     continue
@@ -219,26 +225,28 @@ class CatalogProducts:
                 if installer["Catalog"] in [SeedType.CustomerSeed, SeedType.DeveloperSeed, SeedType.PublicSeed]:
                     continue
                 try:
-                    if packaging.version.parse(installer["Version"]) > _newest_version:
-                        _newest_version = packaging.version.parse(installer["Version"])
+                    if packaging.version.parse(installer["Version"]) > _latest_stable_version:
+                        _latest_stable_version = packaging.version.parse(installer["Version"])
                 except packaging.version.InvalidVersion:
                     pass
 
-            # Next, remove all installers that are not the newest version
+            # Next, remove all installers that are older than the largest stable version
             for installer in products:
                 if installer["Version"] is None:
                     continue
                 if not installer["Version"].startswith(version.value):
                     continue
                 try:
-                    if packaging.version.parse(installer["Version"]) < _newest_version:
+                    if packaging.version.parse(installer["Version"]) < _latest_stable_version:
                         if installer in products_copy:
                             products_copy.pop(products_copy.index(installer))
                 except packaging.version.InvalidVersion:
                     pass
 
-                # Remove beta versions if a public release is available
-                if _newest_version != packaging.version.parse("0.0.0"):
+                # If there is a largest stable version, remove all betas
+                # This is to ensure that we only keep the latest stable version where it is available
+                # but ensure we have a beta if it is the only version available (ie. macOS X.0 betas)
+                if _latest_stable_version != packaging.version.parse("0.0.0"):
                     if installer["Catalog"] in [SeedType.CustomerSeed, SeedType.DeveloperSeed, SeedType.PublicSeed]:
                         if installer in products_copy:
                             products_copy.pop(products_copy.index(installer))
@@ -325,9 +333,18 @@ class CatalogProducts:
 
                         if plist_contents:
                             if Path(package["URL"]).name == "Info.plist":
-                                _product_map.update(self._legacy_parse_info_plist(plist_contents))
+                                result = self._legacy_parse_info_plist(plist_contents)
                             else:
-                                _product_map.update(self._parse_mobile_asset_plist(plist_contents))
+                                result = self._parse_mobile_asset_plist(plist_contents)
+
+                            if result == {"Missing VMM Support": True}:
+                                _product_map = {}
+                                break
+
+                            _product_map.update(result)
+
+            if _product_map == {}:
+                continue
 
             if _product_map["Version"] is not None:
                 _product_map["Title"] = self._build_installer_name(_product_map["Version"], _product_map["Catalog"])

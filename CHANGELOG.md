@@ -1,6 +1,135 @@
 # OpenCore Legacy Patcher changelog
 
+## 2.5.0
+- Disable repatching a dirty root volume
+  - Prevents issues if existing patches are partially overwritten
+  - Thanks @crystall1nedev!
+- Add slimmed down patchset for Modern Wireless for macOS Sequoia
+- Move JavaScriptCore patch for pre-AVX Macs to RestrictEvents
+  - Additionally fixes machines without WiFi cards on Sonoma+ as the patch was not applied before
+- Resolve crashing caused by incorrect reported version in CoreImage patch
+- Increment binaries:
+  - OpenCorePkg 1.0.4 - release
+  - Lilu 1.7.1 - release
+  - RestrictEvents 1.1.7 - (rolling - b70aaa4)
+  - PatcherSupportPkg 1.9.7 - release
+
+## 2.4.1
+- Switch installer source to AppleDB
+  - Resolves missing or incorrect installers showing up when downloading an installer
+
+## 2.4.0
+- Reduce CPU usage on main UI thread
+  - Thanks [goneng](https://github.com/goneng) for the implementation!
+- Resolve T1 issues:
+  - coreautha crashes on macOS 14.4 or later
+  - ApplePay on macOS 15.5
+- Resolve USB Camera support on USB 1.1 Macs in macOS Sequoia
+- Increment binaries:
+  - PatcherSupportPkg 1.9.5 - release
+
+## 2.3.2
+- Resolve erroring in Passwords app and Safari Autofill on T1 Macs running 15.4 or later
+- Increment binaries:
+  - PatcherSupportPkg 1.9.3 - release
+
+## 2.3.1
+- Resolve error on OpenCore Vaulted configs
+  - Regression from 2.3.0
+
+## 2.3.0
+- Disable crash analytics
+  - Disabled server side for years, removing client side
+- `OpenCore-Patcher-GUI.app.zip` removed from release
+  - Deprecated in 1.5.0, use `OpenCore-Patcher.pkg` for installation
+- Sync copyright label to 2025
+- Resolve MetallibSupportPkg failing to be cached on units without Kernel Debug Kit requirements
+- Resolve Broadwell widget rendering on macOS Sequoia
+- Resolve non-Metal crashing on macOS Big Sur and Sequoia (15.4)
+- Resolve T1 erroring on macOS Sequoia (15.4)
+- Enabled non-metal beta menubar styling globally
+  - No changes to GUI settings
+- Increment binaries:
+  - OpenCorePkg 1.0.4 - release
+  - Lilu 1.7.0 - release
+  - WhateverGreen 1.6.9 - release
+  - AirPortBrcmFixup 2.1.9 - release
+  - NVMeFix 1.1.2 - release
+  - RestrictEvents 1.1.5 - release
+  - FeatureUnlock 1.1.7 - release
+  - DebugEnhancer 1.1.0 - release
+  - CPUFriend 1.2.9 - release
+  - BlueToolFixup 2.6.9 - release
+  - CryptexFixup 1.0.4 - release
+  - PatcherSupportPkg 1.9.2 - release
+
+## 2.2.0
+- Resolved non-metal accessibility zoom on macOS Sonoma/Sequoia
+- Resolved non-metal photos app on macOS Sequoia
+- Resolved non-metal Screen Sharing on macOS Sequoia
+- Resolved non-metal inverted screenshots on macOS Sequoia
+- Improved non-metal beta menubar reliability
+- Disabled non-metal broken weather background animations on macOS Sequoia
+- Resolved non-metal safari hide distracting items crash on macOS Sequoia
+- Resolved non-metal full screen transition on macOS Sonoma/Sequoia
+- Resolved T1 Apple Pay on macOS Sequoia
+- Resolved T1 TouchID support on macOS Sequoia 15.2
+- Resolved iCloud sync problems
+- Resolved JavaScriptCore on pre-AVX Macs on macOS Sequoia 15.2/Safari 18.2
+- Increment binaries:
+  - PatcherSupportPkg 1.9.1 - release
+
+## 2.1.2
+- Add additional error handling for when building OpenCore errors out
+  - Prevents broken EFI from being installed to disk
+- Add additional error handling for broken settings file from OCLP 2.1.0
+  - If typing for settings is wrong, app will skip setting it, delete from settings file and use default
+  - Delete `/Users/Shared/.com.dortania.opencore-legacy-patcher.plist` and restart app to avoid this issue
+- Add additional warning about OCLP 2.1.0 bug where certain settings saved incorrectly
+  - Delete `/Users/Shared/.com.dortania.opencore-legacy-patcher.plist` and restart app if `TypeError: unsupported type: <class 'NoneType'>` error occurs
+
+## 2.1.1
+- Resolve boolean GUI settings saving incorrectly as Python's None type
+
 ## 2.1.0
+- Disable FeatureUnlock by default
+  - Intended to maintain long term stability
+  - If features unlocked by FeatureUnlock desired, can be enabled in settings
+- Disable mediaanalysisd on Metal 3802-based GPUs
+  - Intended to maintain long term stability
+  - If Live Text support desired, can be enabled in settings
+- Support for retaining GUI settings when building on-model
+  - When switching to a different model, model-specific GUI settings will be reset
+  - Note resetting saved settings not implemented yet
+    - Delete `/Users/Shared/.com.dortania.opencore-legacy-patcher.plist` and restart app to reset settings
+- Resolve macOS 15.1 (24B2083) Apple Silicon installer appearing as download option
+- Resolve WhatsApp crashing on 15.1
+- Increment binaries:
+  - PatcherSupportPkg 1.8.4 - release
+
+## 2.0.2
+- Fix Nvidia Kepler patches not installing on Monterey
+- Fix `iMac7,1` and `iMac8,1` failing to apply root patches on macOS Sequoia
+- Avoid downgrading AppleGVA stack on AMD GCN and newer GPUs
+  - Resolves VTDecoderXPC crashes
+  - Thanks @ausdauersportler for the catch!
+- Resolve glitched widgets on 3802-based GPUs running macOS Sequoia 15.1
+- Resolve CoreImage crashes on 3802-based GPUs running macOS Sequoia
+- Resolve missing screen capture crop borders on non-Metal GPUs running macOS Sequoia
+- Resolve TeraScale 2 HDCP kernel panic
+- Resolve specific Wallpaper locking up on non-Metal GPUs running macOS Sequoia
+  - Removes unsupported Metal-based wallpaper (Macintosh Wallpaper)
+- Resolve firmware upload incompatibilities on pre-2012 Macs with 2012+ Airport cards
+  - Thanks @ausdauersportler for the catch!
+- Resolve `diskutil` failing to be located in the installer creation process
+  - Thanks @niklasravnsborg for the report!
+- Increment binaries:
+  - PatcherSupportPkg 1.8.3 - release
+
+## 2.0.1
+- Fix MacBookPro13,3 listing 'Available patches' after having installed all applicable patches
+- Fix Nvidia Tesla and Kepler patches not installing on Monterey (and older if applicable)
+- Fix Nvidia Web Drivers incorrectly listing 'OpenGL', 'compat' and 'nvda_drv(_vrl)' missing
 
 ## 2.0.0
 - Set `AssociatedBundleIdentifiers` property in launch services as an array

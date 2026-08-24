@@ -72,7 +72,7 @@ xw
             return
 
         support.BuildSupport(self.model, self.constants, self.config).enable_kext("FeatureUnlock.kext", self.constants.featureunlock_version, self.constants.featureunlock_path)
-        if self.constants.fu_arguments is not None:
+        if self.constants.fu_arguments is not None and self.constants.fu_arguments != "":
             logging.info(f"- Adding additional FeatureUnlock args: {self.constants.fu_arguments}")
             self.config["NVRAM"]["Add"]["7C436110-AB2A-4BBB-A880-FE41995C9F82"]["boot-args"] += self.constants.fu_arguments
 
@@ -154,6 +154,11 @@ xw
         if smbios_data.smbios_dictionary[self.model]["CPU Generation"] == cpu_data.CPUGen.ivy_bridge.value:
             logging.info("- Fixing CoreGraphics support on Ivy Bridge")
             re_patch_args.append("f16c")
+
+        # Patch AVX hardcoding in JavaScriptCore
+        if smbios_data.smbios_dictionary[self.model]["CPU Generation"] < cpu_data.CPUGen.sandy_bridge.value:
+            logging.info("- Fixing AVX hardcoding in JavaScriptCore")
+            re_patch_args.append("jsc")
 
         return re_patch_args
 
